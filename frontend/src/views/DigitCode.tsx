@@ -11,10 +11,12 @@ import { useAppDispatch } from "hooks/useAppDispatch";
 import { useAppSelector } from "hooks/useAppSelector";
 import { FC } from "react";
 import { digitCodeActions } from "store/slices/digitCodeSlice";
+import { evaluateDigit } from "../deductions"; // helper that runs the wasm solver
 
 const DigitCode: FC = () => {
   const dispatch = useAppDispatch();
   const digitCode = useAppSelector((state) => state.digitCode);
+  const state = useAppSelector((s) => s); // full root state for deductions
   const theme = useTheme();
 
   return (
@@ -46,13 +48,43 @@ const DigitCode: FC = () => {
                       height: theme.spacing(6),
                       width: theme.spacing(6),
                     }}
-                    onClick={() => {
-                      dispatch(
-                        digitCodeActions.toggleDigitState({
-                          shape,
-                          digit,
-                        })
+                    onClick={async () => {
+                      const entry = digitCode.find(
+                        (e) => e.shape === shape && e.digit === digit
                       );
+
+                      if (entry) {
+                        // previously marked; clicking again clears the annotation
+                        dispatch(
+                          digitCodeActions.removeDigit({ shape, digit })
+                        );
+                        return;
+                      }
+
+                      // compute deduction from solver using the redux state
+                      const { possible, certain } = await evaluateDigit(
+                        state,
+                        shape,
+                        digit
+                      );
+
+                      if (!possible) {
+                        dispatch(
+                          digitCodeActions.setDigitState({
+                            shape,
+                            digit,
+                            state: "incorrect",
+                          })
+                        );
+                      } else if (certain) {
+                        dispatch(
+                          digitCodeActions.setDigitState({
+                            shape,
+                            digit,
+                            state: "correct",
+                          })
+                        );
+                      }
                     }}
                   >
                     <SingleCharLabel>{digit}</SingleCharLabel>

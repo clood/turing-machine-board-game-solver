@@ -29,7 +29,9 @@ const Letters: FC<LettersProps> = ({card, verifier, letters, toggleLetter}) => {
                 height: theme.spacing(6),
                 width: theme.spacing(6),
               }}
-              onClick={() => toggleLetter(letter.letter)}
+              onClick={async () => {
+                await toggleLetter(letter.letter);
+              }}
             >
               <SingleCharLabel>{letter.letter}</SingleCharLabel>
               <Box
