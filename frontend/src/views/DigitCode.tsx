@@ -53,6 +53,7 @@ const DigitCode: FC = () => {
                           shape,
                           digit,
                         })
+                      )
                     }}
                   >
                     <SingleCharLabel>{digit}</SingleCharLabel>
