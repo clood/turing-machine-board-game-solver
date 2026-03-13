@@ -67,9 +67,7 @@ function checkLetters(state: RootState, possibleLetters: string[][]) {
   return true;
 }
 
-
-// helper that builds the input for the wasm solver based on the current redux state
-async function queryWorker(state: RootState) {
+export async function checkDeductions(state: RootState) {
   const numVerifiers = state.comments.length;
   const mode = (() => {
     if (state.comments[0].nightmare) {
@@ -122,12 +120,6 @@ async function queryWorker(state: RootState) {
     mode,
     numVerifiers,
   });
-
-  return result;
-}
-
-export async function checkDeductions(state: RootState) {
-  const result = await queryWorker(state);
 
   console.log(result);
   console.log(state);
@@ -206,52 +198,3 @@ myWorker.onmessage = function onmessage(e) {
   resolve(data);
   delete promiseResolves[data.id];
 };
-
-// ----- deduction helpers --------------------------------------------------
-
-/**
- * return `true` if the given shape-digit pair is possible in at least one of
- * the codes currently consistent with the queries, and `false` if it has
- * already been ruled out.  If the value appears in *all* possible codes we
- * regard it as certain which allows the UI to mark it "correct".
- */
-export async function evaluateDigit(
-  state: RootState,
-  shape: Shape,
-  digit: Digit
-): Promise<{ possible: boolean; certain: boolean }> {
-  const result = await queryWorker(state);
-  // each code is a string like "123" where 0=triangle,1=square,2=circle
-  const shapeIndex: Record<Shape, number> = {
-    triangle: 0,
-    square: 1,
-    circle: 2,
-  };
-  const idx = shapeIndex[shape];
-  const presentValues = new Set<number>();
-  for (const code of result.codes) {
-    presentValues.add(Number(code[idx]));
-  }
-  const possible = presentValues.has(digit);
-  const certain = possible && presentValues.size === 1;
-  return { possible, certain };
-}
-
-/**
- * return `true` when the letter is still allowed for the given verifier; the
- * caller will typically negate this when deciding whether to mark the letter
- * irrelevant.
- */
-export async function evaluateLetter(
-  state: RootState,
-  verifier: Verifier,
-  letter: Verifier
-): Promise<boolean> {
-  const result = await queryWorker(state);
-  const idx = state.comments.findIndex((c) => c.verifier === verifier);
-  if (idx < 0) {
-    return false;
-  }
-  return result.possibleLetters[idx].includes(letter);
-}
-

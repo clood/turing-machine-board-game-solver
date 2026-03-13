@@ -14,7 +14,7 @@ import { digitCodeActions } from "store/slices/digitCodeSlice";
 
 const DigitCode: FC = () => {
   const dispatch = useAppDispatch();
-  const digitCode = useAppSelector((state) => state.digitCode)
+  const digitCode = useAppSelector((state) => state.digitCode);
   const theme = useTheme();
 
   return (
@@ -52,7 +52,7 @@ const DigitCode: FC = () => {
                           shape,
                           digit,
                         })
-                      )
+                      );
                     }}
                   >
                     <SingleCharLabel>{digit}</SingleCharLabel>

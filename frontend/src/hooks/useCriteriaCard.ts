@@ -3,7 +3,6 @@ import { useUpdateEffect } from "react-use";
 import { Letter, commentsActions } from "store/slices/commentsSlice";
 import { useAppDispatch } from "./useAppDispatch";
 import { useAppSelector } from "./useAppSelector";
-import { evaluateLetter } from "../deductions";
 
 export type CryptCard = {
   id: number
@@ -125,20 +124,18 @@ export const useCriteriaCard = (verifier: Verifier, index: number) => {
     dispatch(commentsActions.updateCard({ verifier, index, card }));
   }, [card]);
 
-  // when the user clicks a letter cell we ask the deduction engine
-  // whether that letter is still consistent with the information entered so
-  // far.  if it is impossible we mark the letter irrelevent (show an X), and
-  // otherwise we leave it blank.
-  const toggleLetter = async (letterClicked: Verifier) => {
+  const toggleLetter = (verifier: Verifier) => {
     if (!letters) return;
-    const state = (window as any).store.getState();
-    const possible = await evaluateLetter(state, verifier, letterClicked);
     setLetters(
-      letters.map((letter: Letter) =>
-        letter.letter === letterClicked
-          ? { ...letter, isIrrelevant: !possible }
-          : letter
-      )
+      letters.map((letter: Letter) => {
+        if (letter.letter === verifier) {
+          return {
+            ...letter,
+            isIrrelevant: !letter.isIrrelevant,
+          };
+        }
+        return letter;
+      })
     );
   };
   useUpdateEffect(() => {
