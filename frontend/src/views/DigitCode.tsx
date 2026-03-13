@@ -14,8 +14,7 @@ import { digitCodeActions } from "store/slices/digitCodeSlice";
 
 const DigitCode: FC = () => {
   const dispatch = useAppDispatch();
-  const digitCode = useAppSelector((state) => state.digitCode);
-  const state = useAppSelector((s) => s); // full root state for deductions
+  const digitCode = useAppSelector((state) => state.digitCode)
   const theme = useTheme();
 
   return (
